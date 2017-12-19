@@ -8,6 +8,9 @@ public class CubeController : MonoBehaviour {
 
 	public bool nextCube = false;
 
+	public bool active = false;
+
+
 
 	//GameController myGameController;
 
