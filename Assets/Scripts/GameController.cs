@@ -35,19 +35,20 @@ public class GameController : MonoBehaviour {
 
 	GameObject activeCube = null;
 
+	int score = 0;
 
+	int rainbowPoints = 5;
 
-
-
+	int sameColorPoints = 10;
 
 	// Use this for initialization
 	void Start () {
 
-		CreateGrid ();
+		CreateAGrid ();
 
 	}
 
-	void CreateGrid(){
+	void CreateAGrid(){
 
 		grid = new GameObject[gridX, gridY];
 
@@ -73,16 +74,16 @@ public class GameController : MonoBehaviour {
 
 	void EndGame (bool win){
 		
-		//end game 
+
 		if (win) {
 		
-			// players win!
+			// Show text if you win
 			nextCubeText.text = "You Win!";
 		
 		} else {
 	
-			// players lose!
-			nextCubeText.text = "You Lose. Try again!";
+			// Show text if you lose
+			nextCubeText.text = "Game Over. Try again!";
 		}
 
 		// next cube exist in case the timing 
@@ -182,7 +183,7 @@ public class GameController : MonoBehaviour {
 
 		GameObject whiteCube = FindAvailableCube ();
 
-		// use a color value that is beyond the max
+		// if is beyond the max use a color value
 		SetCubeColor (whiteCube, Color.black);
 
 	}
@@ -210,14 +211,14 @@ public class GameController : MonoBehaviour {
 		// if we still have a next cube and the player pressed a valid number key
 		if (nextCube != null && numKeyPressed != 0) {
 
-			// put it in the specified row, subtracting 1 since the grid array has a 0-based index
+			// put it in the specified row
 			PlaceNextCube (numKeyPressed - 1);
 		}
 	} 
 
-	public void ProcessClick (GameObject clickedCube, int x, int y, Color cubeColor, bool active){
+	public void Click (GameObject clickedCube, int x, int y, Color cubeColor, bool active){
 	
-		// did we click on a colored cube?
+		// did I click on a colored cube?
 		if (cubeColor != Color.white && cubeColor != Color.black) {
 
 			//  if that cube was active
@@ -262,7 +263,7 @@ public class GameController : MonoBehaviour {
 				activeCube.transform.localScale /= 1.5f;
 				activeCube.GetComponent<CubeController> ().active = false;
 
-				// keep track of the new active cube
+				// the new active cube is a clicked cube
 				activeCube = clickedCube;
 
 			}
@@ -320,7 +321,7 @@ public class GameController : MonoBehaviour {
 
 	void MakeBlackPlus (int x, int y) {
 		
-		// this is an error check to ensure that the x and y aren't on the edge of the grid
+		// ensure that the x and y aren't on the edge of the grid
 		if (x == 0 || y == 0 || x == gridX - 1 || y == gridY - 1) {
 			return;
 		}
@@ -333,28 +334,101 @@ public class GameController : MonoBehaviour {
 
 		// if we had an active cube and it was involved in the plus
 		if (activeCube != null && activeCube.GetComponent<Renderer>().material.color == Color.black) {
+			
 			// deactivate it
 			activeCube.transform.localScale /= 1.5f;
 			activeCube.GetComponent<CubeController> ().active = false;
 			activeCube = null;
+
 		}
+	}
+
+	void Score (){
+	
+		// check the whole grid, except for the edges 
+
+		for (int x = 1; x < gridX - 1; x++) {
+			
+			for (int y = 1; y < gridY - 1; y++) {
+			
+				if (IsRainbowPlus (x, y)) {
+				
+					score += rainbowPoints;
+					MakeBlackPlus (x, y);
+
+				}
+
+				if (IsSameColorPlus(x,y)) {
+
+					score += sameColorPoints;
+					MakeBlackPlus (x, y);
+				
+				}
+
+			} 
+		
+		}
+	
+	
 	}
 
 
 	// Update is called once per frame
 	void Update () {
 
-		//ProcessKeyboardInput ();
 
+		if (Time.time < gameLength) {
 
-		//take a turn every turnLength seconds 
-		if (Time.time > turnLength * turns) {
+			ProccessKeyboardInput ();
+			Score ();
+
+			//take a turn every turnLength seconds 
+			if (Time.time > turnLength * turns) {
 			
-			turns++;
-			//SpawnNewCube ();
+				turns++;
+
+				if (nextCube != null) {
+				
+					score -= 1;
+
+					//make that the score never goes negative
+
+					if (score < 0) {
+					
+						score = 0;
+
+					}
+
+					AddBlackCube ();
+
+				}
+
+				CreateNextCube ();
+			}
+
+			///See the score in the text 
+
+			scoreText.text = "Score: " + score;
+		}
+
+		///time is up 
+		else if (!gameOver){
+
+			if (score > 0) {
+
+				EndGame (true);
+
+			} else {
+			
+			
+				EndGame (false);	
+			
+			}
 
 		}
 
-
 	}
 }
+		
+
+

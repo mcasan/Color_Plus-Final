@@ -10,21 +10,26 @@ public class CubeController : MonoBehaviour {
 
 	public bool active = false;
 
-
-
-	//GameController myGameController;
+	GameController myGameController;
 
 
 
 	// Use this for initialization
 	void Start () {
 
-	//	myGameController = GameObject.Find ("GameControllerObject").GetComponent<GameController> ();
+		myGameController = GameObject.Find ("GameObject").GetComponent<GameController> ();
 		
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
+
+	void OnMouseDown () {
+
+		if (!nextCube) {
+			
+			myGameController.Click (gameObject, myX, myY, gameObject.GetComponent<Renderer> ().material.color, active);
+
+		}
 	}
+
+
 }
